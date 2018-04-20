@@ -2,6 +2,7 @@ package com.example.camera;
 
 import com.example.camera.view.CameraSurfaceView;
 import com.example.camera.view.RectOnCamera;
+import com.example.camera.utils.Internet;
 
 import android.app.Activity;
 import android.graphics.Point;
@@ -16,10 +17,11 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 public class MainActivity extends Activity 
-	implements View.OnClickListener,RectOnCamera.IAutoFocus ,CameraSurfaceView.DrawRect{
+	implements View.OnClickListener,RectOnCamera.IAutoFocus ,Internet.Info,CameraSurfaceView.DrawRect{
 	
 	private CameraSurfaceView mCameraSurfaceView;
 	private RectOnCamera mRectOnCamera;
+	private Internet internet;
 	private Button takePicBtn;
 	private boolean isClicked;
 
@@ -70,7 +72,7 @@ public class MainActivity extends Activity
 	@Override
 	public void drawR(PointF p, double distance, double ratio) {
 		// TODO Auto-generated method stub
-		mRectOnCamera.Draw(p, distance,ratio);
+		mRectOnCamera.setRectParam(p, distance,ratio);
 	}
 
 	@Override
@@ -81,6 +83,12 @@ public class MainActivity extends Activity
 			mCameraSurfaceView.takePicture();
 			break;
 		}
+	}
+
+	@Override
+	public void setInfo(String sex, String age) {
+		// TODO Auto-generated method stub
+		mRectOnCamera.setPersonInfo(sex, age);
 	}
 
 }

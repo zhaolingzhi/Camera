@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import com.example.camera.utils.Internet;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -47,6 +49,7 @@ public class CameraSurfaceView extends SurfaceView
 //	private Handler mDetectHandler;
 	private File externalpath;
 	private Thread thread;
+	private Internet mInternet;
 
 	private enum Tag {pic,prev;}
 	
@@ -54,51 +57,7 @@ public class CameraSurfaceView extends SurfaceView
 		public void drawR(PointF p,double distance,double ratio);
 	}
 	
-	private PictureCallback jpeg=new PictureCallback() {
-		
-		@Override
-		public void onPictureTaken(byte[] data, Camera camera) {
-			// TODO Auto-generated method stub
-			BufferedOutputStream bos=null;
-			Bitmap bm=null;
-			try {
-				bm=BitmapFactory.decodeByteArray(data, 0, data.length);
-				bm = rotateToDegrees(bm, -90);
-				if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-				{//外部存储状态
-					String filePath=externalpath.getPath()+"/"+System.currentTimeMillis()+".jpeg";
-					File file=new File(filePath);
-					if(!file.exists()) {
-						file.createNewFile();
-					}
-					bos=new BufferedOutputStream(new FileOutputStream(file));
-					bm.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-
-				}else {
-					Toast.makeText(mContext, "没有检测到内存卡",Toast.LENGTH_SHORT).show();
-				}
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally { //出错后会也会继续执行的代码
-				try {
-					bos.flush();
-					bos.close();
-					bm.recycle();
-					mCamera.stopPreview();
-					mCamera.startPreview();//拍完后重新预览
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-	};
-	public static Bitmap rotateToDegrees(Bitmap tmpBitmap, float degrees) {
-	    Matrix matrix = new Matrix();
-	    matrix.reset();
-	    matrix.setRotate(degrees);
-	    return Bitmap.createBitmap(tmpBitmap, 0, 0, tmpBitmap.getWidth(), tmpBitmap.getHeight(), matrix, true);
-	}
+	
 	
 	public CameraSurfaceView(Context context,AttributeSet attrs) {
 		super(context,attrs);
@@ -108,6 +67,7 @@ public class CameraSurfaceView extends SurfaceView
 		initView();
 		lastTime=System.currentTimeMillis();
 		externalpath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		mInternet=new Internet();
 	}
 
 	private void initView() {
@@ -237,6 +197,7 @@ public class CameraSurfaceView extends SurfaceView
 
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
+		
 		// TODO Auto-generated method stub
 		if(System.currentTimeMillis()-lastTime<=500||data==null) {	
 			mCamera.addCallbackBuffer(data);
@@ -286,12 +247,70 @@ public class CameraSurfaceView extends SurfaceView
 				for(FaceDetector.Face face : arrayofFace) {
 					PointF mMiddlePoint=new PointF();
 					face.getMidPoint(mMiddlePoint);
-					mDrawRect.drawR(mMiddlePoint, face.eyesDistance(),ratio);
+					float distance=face.eyesDistance();
+					mDrawRect.drawR(mMiddlePoint, distance,ratio);
+					distance=(float) (distance*1.8);
+					int x=(int)(preSize.height-mMiddlePoint.x-distance);
+					int y=(int)(mMiddlePoint.y-distance);
+					int len=(int)(2.0*distance);
+					if(x>0&&y>0&&x+len<preSize.height&&y+len<preSize.width) {
+						bm=Bitmap.createBitmap(bm,x,y,len,len,null,true);
+						mInternet.sendImage(bm);
+					}
 				}
+			}else {
+				mDrawRect.drawR(new PointF(0,0), 0, ratio);
 			}
 		}
 		
 	}
+private PictureCallback jpeg=new PictureCallback() {
+		
+		@Override
+		public void onPictureTaken(byte[] data, Camera camera) {
+			// TODO Auto-generated method stub
+			BufferedOutputStream bos=null;
+			Bitmap bm=null;
+			try {
+				bm=BitmapFactory.decodeByteArray(data, 0, data.length);
+				bm = rotateToDegrees(bm, -90);
+				if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+				{//外部存储状态
+					String filePath=externalpath.getPath()+"/"+System.currentTimeMillis()+".jpeg";
+					File file=new File(filePath);
+					if(!file.exists()) {
+						file.createNewFile();
+					}
+					bos=new BufferedOutputStream(new FileOutputStream(file));
+					bm.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+
+				}else {
+					Toast.makeText(mContext, "没有检测到内存卡",Toast.LENGTH_SHORT).show();
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally { //出错后会也会继续执行的代码
+				try {
+					bos.flush();
+					bos.close();
+					bm.recycle();
+					mCamera.stopPreview();
+					mCamera.startPreview();//拍完后重新预览
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	};
+	
+	public static Bitmap rotateToDegrees(Bitmap tmpBitmap, float degrees) {
+	    Matrix matrix = new Matrix();
+	    matrix.reset();
+	    matrix.setRotate(degrees);
+	    return Bitmap.createBitmap(tmpBitmap, 0, 0, tmpBitmap.getWidth(), tmpBitmap.getHeight(), matrix, true);
+	}
+	
 
 	public void takePicture() {
 		// TODO Auto-generated method stub

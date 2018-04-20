@@ -19,16 +19,23 @@ import android.view.WindowManager;
 public class RectOnCamera extends View{
 	private int mScreenWidth;
 	private int mScreenHeight;
-	private Paint mPaint;
+	private int sexNo;
+	private int ageNo;
+	private Paint rectPaint;
+	private Paint namePaint;
 	private RectF mRectF;
 	private PointF centerPoint;
 	private double distance;
 	private IAutoFocus mIAutoFocus;
 	private Canvas canvas;
-
+	private String sex[]= {"","man","woman"};
+	private String age[]= {"","0~3","4~7","8~14","15~22","22~35","35~45","45~60","60~"};
+	
 	public interface IAutoFocus{
 		void autoFocus();
 	}
+	
+	
 
 	public RectOnCamera(Context context,AttributeSet attr) {
 		super(context,attr);
@@ -39,14 +46,21 @@ public class RectOnCamera extends View{
 	
 	private void initView(Context context) {
 		// TODO Auto-generated method stub
-		mPaint=new Paint();
-		mPaint.setAntiAlias(true);
-		mPaint.setDither(true);
-		mPaint.setColor(Color.RED);
-		mPaint.setStyle(Style.STROKE);
-		mPaint.setStrokeWidth(5);
+		rectPaint=new Paint();
+		rectPaint.setAntiAlias(true);
+		rectPaint.setDither(true);
+		rectPaint.setColor(Color.RED);
+		rectPaint.setStyle(Style.STROKE);
+		rectPaint.setStrokeWidth(5);
+		
+		namePaint=new Paint();
+		namePaint.setColor(Color.RED);
+		namePaint.setTextSize(200);
+		
 		centerPoint=new PointF(mScreenWidth/2,mScreenHeight/2);
 		distance= 0.0;
+		sexNo=0;
+		ageNo=0;
 
 	}
 
@@ -59,23 +73,25 @@ public class RectOnCamera extends View{
 		mScreenHeight=outMetrics.heightPixels;
 	}
 	
-	public void Draw(PointF point,double dis,double ratio) {
+	public void setRectParam(PointF point,double dis,double ratio) {
 		centerPoint.x=(float)mScreenWidth-(float)(point.x*ratio);
 		centerPoint.y=(float)(point.y*ratio);
 		distance=dis*ratio*1.8;
 		postInvalidate();
 	}
 	
+	public void setPersonInfo(String sex,String age) {
+		sexNo=Integer.parseInt(sex);
+		ageNo=Integer.parseInt(age);
+	}
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		mPaint.setColor(Color.WHITE);
-		mPaint.setColor(Color.RED);
 		canvas.drawRect(new RectF((int)(centerPoint.x-distance),
 								  (int)(centerPoint.y-distance),
 								  (int)(centerPoint.x+distance),
-								  (int)(centerPoint.y+distance)), mPaint);
-		
+								  (int)(centerPoint.y+distance)), rectPaint);
+		//canvas.drawText(sex[sexNo]+" "+age[ageNo], (int)(centerPoint.x-distance), (int)(centerPoint.y-distance), namePaint);	
 	}
 	
 	@Override
