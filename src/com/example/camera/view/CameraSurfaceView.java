@@ -57,8 +57,6 @@ public class CameraSurfaceView extends SurfaceView
 		public void drawR(PointF p,double distance,double ratio);
 	}
 	
-	
-	
 	public CameraSurfaceView(Context context,AttributeSet attrs) {
 		super(context,attrs);
 		// TODO Auto-generated constructor stub
@@ -96,10 +94,8 @@ public class CameraSurfaceView extends SurfaceView
 			}catch(IOException e) {
 				e.printStackTrace();
 			}
-			
 		}
 	}
-	
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -109,7 +105,6 @@ public class CameraSurfaceView extends SurfaceView
 		Parameters parameters=mCamera.getParameters();
 		mCamera.addCallbackBuffer(new byte[parameters.getPreviewSize().width*parameters.getPreviewSize().height*ImageFormat.getBitsPerPixel(parameters.getPreviewFormat())/8]);
 		mCamera.startPreview();
-		
 	}
 
 	private void setCameraParams(Camera mCamera2, int width, int height) {
@@ -311,7 +306,6 @@ private PictureCallback jpeg=new PictureCallback() {
 	    return Bitmap.createBitmap(tmpBitmap, 0, 0, tmpBitmap.getWidth(), tmpBitmap.getHeight(), matrix, true);
 	}
 	
-
 	public void takePicture() {
 		// TODO Auto-generated method stub
 		mCamera.takePicture(null, null, jpeg);

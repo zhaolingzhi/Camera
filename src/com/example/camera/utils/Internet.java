@@ -1,13 +1,13 @@
 package com.example.camera.utils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,20 +17,34 @@ import android.graphics.Matrix;
 import android.util.Base64;
 
 public class Internet {
+	private static final String end="END" ;
 	private String picture;
-	private Info info;
+	private static Info minfo;
 	
 	public interface Info{
 		void setInfo(String sex,String age);
 	}
 	
-	public void sendImage(Bitmap bitmap) {
+	public static void setInternet(Info info) {
+		minfo=info;	
+	}
 	
+	public Bitmap BitmapCompress(Bitmap bitmap) {
+		float scaleWidth = ((float) 227) / bitmap.getWidth();  
+	    float scaleHeight = ((float) 227) / bitmap.getHeight();  
+	    Matrix matrix = new Matrix();  
+	    matrix.postScale(scaleWidth, scaleHeight);  
+	    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,  
+	      true); 
+	}
+	
+	public void sendImage(Bitmap bitmap) {
+	    bitmap=BitmapCompress(bitmap);
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 		picture=Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-//		Thread submit=new Thread(new SubmitThread());
-//		submit.start();
+		Thread submit=new Thread(new SubmitThread());
+		submit.start();
 	}
 	
 	class SubmitThread implements Runnable{
@@ -48,31 +62,30 @@ public class Internet {
 	}
 
 	public int server(JSONObject object) {
-		// TODO Auto-generated method stub
-		String path="";
+		String ip="192.168.1.103";
+		int port=8080;
 		try {
-			URL url=new URL(path);
-			String content=String.valueOf(object);
-			HttpURLConnection conn=(HttpURLConnection)url.openConnection();
-			conn.setConnectTimeout(1000);
-			conn.setDoOutput(true);
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("User-Agent", "Fiddler");
-			conn.setRequestProperty("Content-Type", "application/json");
-			OutputStream os=conn.getOutputStream();
-			os.write(content.getBytes()); //内容写到输出流
-			os.close();
-			if(conn.getResponseCode()==200) {
-				BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String result;
-				result=in.readLine();
-				in.close();
-				JSONObject rInfo=new JSONObject(result);
-				info.setInfo(rInfo.getString("sex"), rInfo.getString("age"));
-			}
-		}catch(MalformedURLException e) {
+			Socket s=new Socket(ip,port);  
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+            out.write(String.valueOf(object));
+            out.write(end);
+            out.flush();
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            String result;
+            result=in.readLine();
+            in.close();
+            s.close();
+            JSONObject rInfo=new JSONObject(result);
+            String sex=rInfo.getString("sex");
+            String age=rInfo.getString("age");
+			minfo.setInfo(sex, age);
+			
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}catch(IOException e) {
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

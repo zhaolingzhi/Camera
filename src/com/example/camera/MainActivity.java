@@ -17,11 +17,10 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 public class MainActivity extends Activity 
-	implements View.OnClickListener,RectOnCamera.IAutoFocus ,Internet.Info,CameraSurfaceView.DrawRect{
+	implements View.OnClickListener,Internet.Info,CameraSurfaceView.DrawRect{
 	
 	private CameraSurfaceView mCameraSurfaceView;
 	private RectOnCamera mRectOnCamera;
-	private Internet internet;
 	private Button takePicBtn;
 	private boolean isClicked;
 
@@ -39,35 +38,11 @@ public class MainActivity extends Activity
 		mCameraSurfaceView=(CameraSurfaceView)findViewById(R.id.cameraSurfaceView);
 		mRectOnCamera=(RectOnCamera)findViewById(R.id.rectOnCamera);
 		takePicBtn=(Button)findViewById(R.id.qiezi);
-		mRectOnCamera.setIAutoFocus(this);
 		mCameraSurfaceView.setDrawRect(this);
+		Internet.setInternet(this);
 		takePicBtn.setOnClickListener(this);
 	}
 
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.real_time, menu);
-//		return true;
-//	}
-
-//	@Override
-//	public boolean onOptionsItemSelected(MenuItem item) {
-//		// Handle action bar item clicks here. The action bar will
-//		// automatically handle clicks on the Home/Up button, so long
-//		// as you specify a parent activity in AndroidManifest.xml.
-//		int id = item.getItemId();
-//		if (id == R.id.action_settings) {
-//			return true;
-//		}
-//		return super.onOptionsItemSelected(item);
-//	}
-
-	@Override
-	public void autoFocus() {   //接口函数的重写
-		// TODO Auto-generated method stub
-		mCameraSurfaceView.setAutoFocus();
-	}
 	
 	@Override
 	public void drawR(PointF p, double distance, double ratio) {

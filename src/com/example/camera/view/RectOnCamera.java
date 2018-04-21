@@ -26,15 +26,9 @@ public class RectOnCamera extends View{
 	private RectF mRectF;
 	private PointF centerPoint;
 	private double distance;
-	private IAutoFocus mIAutoFocus;
 	private Canvas canvas;
 	private String sex[]= {"","man","woman"};
 	private String age[]= {"","0~3","4~7","8~14","15~22","22~35","35~45","45~60","60~"};
-	
-	public interface IAutoFocus{
-		void autoFocus();
-	}
-	
 	
 
 	public RectOnCamera(Context context,AttributeSet attr) {
@@ -91,28 +85,7 @@ public class RectOnCamera extends View{
 								  (int)(centerPoint.y-distance),
 								  (int)(centerPoint.x+distance),
 								  (int)(centerPoint.y+distance)), rectPaint);
-		//canvas.drawText(sex[sexNo]+" "+age[ageNo], (int)(centerPoint.x-distance), (int)(centerPoint.y-distance), namePaint);	
-	}
-	
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		switch(event.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-		case MotionEvent.ACTION_MOVE:
-		case MotionEvent.ACTION_UP:
-			
-			if(mIAutoFocus!=null) {
-				mIAutoFocus.autoFocus();//->main.autoFoce
-			}
-			return true;
-		}
-		return false;
-		
-	}
-	
-		
-	public void setIAutoFocus(IAutoFocus mIAutoFocus) {
-		this.mIAutoFocus=mIAutoFocus;
+		canvas.drawText(sex[sexNo]+" "+age[ageNo], (int)(centerPoint.x-distance), (int)(centerPoint.y-distance), namePaint);	
 	}
 	
 }
