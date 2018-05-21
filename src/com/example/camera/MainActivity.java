@@ -4,7 +4,9 @@ import com.example.camera.view.CameraSurfaceView;
 import com.example.camera.view.RectOnCamera;
 import com.example.camera.utils.Internet;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -22,18 +24,14 @@ public class MainActivity extends Activity
 	private CameraSurfaceView mCameraSurfaceView;
 	private RectOnCamera mRectOnCamera;
 	private Button takePicBtn;
-	private boolean isClicked;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		try {
-			requestWindowFeature(Window.FEATURE_NO_TITLE);//Œﬁ±ÍÃ‚
-			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			setContentView(R.layout.real_time);
-		}catch(Exception e) {
-			Log.e("error","error in code:"+e.toString());
-		}
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		setContentView(R.layout.real_time);
+
 
 		mCameraSurfaceView=(CameraSurfaceView)findViewById(R.id.cameraSurfaceView);
 		mRectOnCamera=(RectOnCamera)findViewById(R.id.rectOnCamera);
@@ -41,6 +39,7 @@ public class MainActivity extends Activity
 		mCameraSurfaceView.setDrawRect(this);
 		Internet.setInternet(this);
 		takePicBtn.setOnClickListener(this);
+		takePicBtn.getBackground().setAlpha(100);
 	}
 
 	
@@ -61,9 +60,9 @@ public class MainActivity extends Activity
 	}
 
 	@Override
-	public void setInfo(String sex, String age) {
+	public void setInfo(String gender, String age) {
 		// TODO Auto-generated method stub
-		mRectOnCamera.setPersonInfo(sex, age);
+		mRectOnCamera.setPersonInfo(gender, age);
 	}
 
 }

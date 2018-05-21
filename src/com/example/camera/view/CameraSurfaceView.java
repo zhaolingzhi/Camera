@@ -36,7 +36,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 public class CameraSurfaceView extends SurfaceView 
-	implements SurfaceHolder.Callback,Camera.AutoFocusCallback,Camera.PreviewCallback{
+	implements SurfaceHolder.Callback,Camera.PreviewCallback{
 	
 	private Context mContext;
 	private SurfaceHolder holder;
@@ -46,7 +46,6 @@ public class CameraSurfaceView extends SurfaceView
 	private double ratio;
 	private DrawRect mDrawRect;
 	private long lastTime;
-//	private Handler mDetectHandler;
 	private File externalpath;
 	private Thread thread;
 	private Internet mInternet;
@@ -60,20 +59,21 @@ public class CameraSurfaceView extends SurfaceView
 	public CameraSurfaceView(Context context,AttributeSet attrs) {
 		super(context,attrs);
 		// TODO Auto-generated constructor stub
+		initView();
 		mContext=context;
 		getScreenMetrix(context);  //屏幕的长宽
-		initView();
+	}
+	
+	private void initView() {
+		// TODO Auto-generated method stub
+		holder=getHolder();
+		holder.addCallback(this);
 		lastTime=System.currentTimeMillis();
 		externalpath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 		mInternet=new Internet();
 	}
 
-	private void initView() {
-		// TODO Auto-generated method stub
-		holder=getHolder();
-		holder.addCallback(this);
-		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-	}
+
 
 	private void getScreenMetrix(Context context) {
 		// TODO Auto-generated method stub
@@ -88,7 +88,7 @@ public class CameraSurfaceView extends SurfaceView
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
 		if(mCamera==null) {
-			mCamera=Camera.open(1);
+			mCamera=Camera.open(1);//打开前置摄像头
 			try {
 				mCamera.setPreviewDisplay(holder);
 			}catch(IOException e) {
@@ -110,14 +110,14 @@ public class CameraSurfaceView extends SurfaceView
 	private void setCameraParams(Camera mCamera2, int width, int height) {
 		// TODO Auto-generated method stub
 		Parameters parameters=mCamera.getParameters();
-		List<Size> pictureSizeList=parameters.getSupportedPictureSizes();
+		List<Size> pictureSizeList=parameters.getSupportedPictureSizes();//获取支持的照片尺寸
 		Size picSize=getProperSize(pictureSizeList,(float)height/width,Tag.pic);
 		if(picSize==null)
 			picSize=parameters.getPictureSize();
-		float w=picSize.width;
-		float h=picSize.height;
+//		float w=picSize.width;
+//		float h=picSize.height;
 		parameters.setPictureSize(picSize.width,picSize.height);
-		this.setLayoutParams(new FrameLayout.LayoutParams((int)(height*(h/w)),height)); //???????
+//		this.setLayoutParams(new FrameLayout.LayoutParams((int)(height*(h/w)),height)); //???????
 		
 		Size prevSize=getProperSize(pictureSizeList,(float)height/width,Tag.prev); //预览尺寸必须为屏幕尺寸的倍数
 		if(prevSize==null)
@@ -129,10 +129,10 @@ public class CameraSurfaceView extends SurfaceView
 		ratio=(double)mScreenHeight/prevSize.width;
 		
 		parameters.setJpegQuality(100);
-		if(parameters.getSupportedFocusModes().contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-			parameters.setFocusMode((Parameters.FOCUS_MODE_CONTINUOUS_PICTURE));
-		mCamera.cancelAutoFocus();
-		mCamera.setDisplayOrientation(90); //????????/
+//		if(parameters.getSupportedFocusModes().contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+//			parameters.setFocusMode((Parameters.FOCUS_MODE_CONTINUOUS_PICTURE));
+//		mCamera.cancelAutoFocus();
+		mCamera.setDisplayOrientation(90); //默认横屏显示，并强行拉伸
 	}
 
 	private Size getProperSize(List<Size> pictureSizeList, float screenRatio,Tag tag) {
@@ -157,7 +157,6 @@ public class CameraSurfaceView extends SurfaceView
 				}
 			}
 			break;
-		
 		case prev:
 			for(Size size:pictureSizeList) {
 				float currentRatio=(float)size.width/size.height;
@@ -166,8 +165,7 @@ public class CameraSurfaceView extends SurfaceView
 					break;
 				}
 			}
-		}
-		
+		}	
 		return result;
 	}
 
@@ -180,35 +178,26 @@ public class CameraSurfaceView extends SurfaceView
 		holder=null;
 	}
 
-	@Override
-	public void onAutoFocus(boolean success, Camera camera) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	public void setAutoFocus() {
-		mCamera.autoFocus(this);
-	}
 
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		
 		// TODO Auto-generated method stub
-		if(System.currentTimeMillis()-lastTime<=500||data==null) {	
+		if(System.currentTimeMillis()-lastTime<=500) {	
 			mCamera.addCallbackBuffer(data);
 			return;
 		}
+		mCamera.addCallbackBuffer(data);
+		lastTime=System.currentTimeMillis();
 		thread=new Thread(new DetectThread(data,camera));
 		thread.start();
-		lastTime=System.currentTimeMillis();
-		mCamera.addCallbackBuffer(data);
 		return;
 	}
 	
-	private Thread getDetectThread(byte[] data,Camera camera){
-		thread=new Thread(new DetectThread(data,camera));
-		return thread;
-	}
+//	private Thread getDetectThread(byte[] data,Camera camera){
+//		thread=new Thread(new DetectThread(data,camera));
+//		return thread;
+//	}
 
 	private class DetectThread implements Runnable{
 		private byte[] mdata;
@@ -223,7 +212,7 @@ public class CameraSurfaceView extends SurfaceView
 		public void run() {
 			// TODO Auto-generated method stub
 			Bitmap bm=null;
-			Camera.Size preSize = mThCamera.getParameters().getPreviewSize();
+			Size preSize = mThCamera.getParameters().getPreviewSize();
 			YuvImage mYuvImg=new YuvImage(mdata,mThCamera.getParameters().getPreviewFormat(),preSize.width,preSize.height,null);
 			ByteArrayOutputStream mByteArrayOutputStream = new ByteArrayOutputStream(); 
 			mYuvImg.compressToJpeg(new Rect(0,0,preSize.width,preSize.height), 100, mByteArrayOutputStream);
@@ -233,8 +222,7 @@ public class CameraSurfaceView extends SurfaceView
 			bmInfo.inPreferredConfig=Bitmap.Config.RGB_565;
 			
 			bm=BitmapFactory.decodeByteArray(mdata, 0, mdata.length,bmInfo);
-			bm = rotateToDegrees(bm, -90);
-			
+			bm = BitmapRotate(bm);
 			
 			FaceDetector fd=new FaceDetector(bm.getWidth(),bm.getHeight(),1);
 			FaceDetector.Face[] arrayofFace=new FaceDetector.Face[1];
@@ -259,7 +247,7 @@ public class CameraSurfaceView extends SurfaceView
 		}
 		
 	}
-private PictureCallback jpeg=new PictureCallback() {
+	private PictureCallback jpeg=new PictureCallback() {
 		
 		@Override
 		public void onPictureTaken(byte[] data, Camera camera) {
@@ -268,7 +256,7 @@ private PictureCallback jpeg=new PictureCallback() {
 			Bitmap bm=null;
 			try {
 				bm=BitmapFactory.decodeByteArray(data, 0, data.length);
-				bm = rotateToDegrees(bm, -90);
+				bm = BitmapRotate(bm);
 				if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
 				{//外部存储状态
 					String filePath=externalpath.getPath()+"/"+System.currentTimeMillis()+".jpeg";
@@ -299,13 +287,15 @@ private PictureCallback jpeg=new PictureCallback() {
 
 	};
 	
-	public static Bitmap rotateToDegrees(Bitmap tmpBitmap, float degrees) {
-	    Matrix matrix = new Matrix();
+	public Bitmap BitmapRotate(Bitmap bm) {
+		// TODO Auto-generated method stub
+		Matrix matrix = new Matrix();
 	    matrix.reset();
-	    matrix.setRotate(degrees);
-	    return Bitmap.createBitmap(tmpBitmap, 0, 0, tmpBitmap.getWidth(), tmpBitmap.getHeight(), matrix, true);
+	    matrix.postRotate(-90);
+	    matrix.postScale(-1, 1);
+	    return Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
 	}
-	
+
 	public void takePicture() {
 		// TODO Auto-generated method stub
 		mCamera.takePicture(null, null, jpeg);

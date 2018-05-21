@@ -2,7 +2,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-
 	<com.example.camera.view.CameraSurfaceView
             android:id="@+id/cameraSurfaceView"
             android:layout_width="match_parent"
@@ -19,15 +18,11 @@
 
         <Button
             android:id="@+id/qiezi"
-            android:layout_width="80dp"
-            android:layout_height="50dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="116dp"
-            android:text="Button" />
-
-        
-
+            android:layout_marginBottom="44dp"
+            android:background="@drawable/mbuttonshape" />
     </RelativeLayout>
-
 </FrameLayout>

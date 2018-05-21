@@ -6,7 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import org.json.JSONException;
@@ -22,22 +24,14 @@ public class Internet {
 	private static Info minfo;
 	
 	public interface Info{
-		void setInfo(String sex,String age);
+		void setInfo(String gender,String age);
 	}
 	
 	public static void setInternet(Info info) {
 		minfo=info;	
 	}
 	
-	public Bitmap BitmapCompress(Bitmap bitmap) {
-		float scaleWidth = ((float) 227) / bitmap.getWidth();  
-	    float scaleHeight = ((float) 227) / bitmap.getHeight();  
-	    Matrix matrix = new Matrix();  
-	    matrix.postScale(scaleWidth, scaleHeight);  
-	    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,  
-	      true); 
-	}
-	
+
 	public void sendImage(Bitmap bitmap) {
 	    bitmap=BitmapCompress(bitmap);
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
@@ -45,6 +39,16 @@ public class Internet {
 		picture=Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 		Thread submit=new Thread(new SubmitThread());
 		submit.start();
+	}
+	
+	public Bitmap BitmapCompress(Bitmap bitmap) {
+		float scaleWidth = ((float) 227) / bitmap.getWidth();  
+	    float scaleHeight = ((float) 227) / bitmap.getHeight();  
+	    Matrix matrix = new Matrix();  
+	    matrix.reset();
+	    matrix.postScale(scaleWidth, scaleHeight);  
+	    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,  
+	      true); 
 	}
 	
 	class SubmitThread implements Runnable{
@@ -62,11 +66,14 @@ public class Internet {
 	}
 
 	public int server(JSONObject object) {
-		String ip="192.168.1.103";
+		String ip="192.168.1.100";
 		int port=8080;
 		try {
-			Socket s=new Socket(ip,port);  
+			Socket s=new Socket();  
+			SocketAddress socAddress = new InetSocketAddress(ip, port); 
+			s.connect(socAddress,5000);
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+            String temp=String.valueOf(object);
             out.write(String.valueOf(object));
             out.write(end);
             out.flush();
@@ -77,9 +84,9 @@ public class Internet {
             in.close();
             s.close();
             JSONObject rInfo=new JSONObject(result);
-            String sex=rInfo.getString("sex");
+            String gender=rInfo.getString("gender");
             String age=rInfo.getString("age");
-			minfo.setInfo(sex, age);
+			minfo.setInfo(gender, age);
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -89,6 +96,8 @@ public class Internet {
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		return 0;
