@@ -20,7 +20,6 @@ import android.util.Base64;
 
 public class Internet {
 	private static final String end="END" ;
-	private String picture;
 	private static Info minfo;
 	
 	public interface Info{
@@ -33,11 +32,11 @@ public class Internet {
 	
 
 	public void sendImage(Bitmap bitmap) {
-	    bitmap=BitmapCompress(bitmap);
+	    bitmap=BitmapCompress(bitmap);//Ëõ·Åµ½227*227
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-		picture=Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-		Thread submit=new Thread(new SubmitThread());
+		String picture=Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+		Thread submit=new Thread(new SubmitThread(picture));
 		submit.start();
 	}
 	
@@ -52,6 +51,12 @@ public class Internet {
 	}
 	
 	class SubmitThread implements Runnable{
+		
+		private String picture;
+		
+		public SubmitThread(String picture){
+			this.picture=picture;
+		}
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub	
@@ -66,7 +71,7 @@ public class Internet {
 	}
 
 	public int server(JSONObject object) {
-		String ip="192.168.1.100";
+		String ip="192.168.43.239";
 		int port=8080;
 		try {
 			Socket s=new Socket();  

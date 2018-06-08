@@ -19,8 +19,8 @@ public class RectOnCamera extends View{
 	private Paint namePaint;
 	private PointF centerPoint;
 	private double distance;
-	private String genders[]= {"","man","woman"};
-	private String ages[]= {"","0~3","4~7","8~14","15~22","22~35","35~45","45~60","60~"};
+	private static String genders[]= {"","man","woman"};
+	private static String ages[]= {"","0~3","4~7","8~14","15~22","23~32","33~45","46~59","60~"};
 	
 
 	public RectOnCamera(Context context,AttributeSet attr) {
@@ -39,15 +39,16 @@ public class RectOnCamera extends View{
 		rectPaint.setStrokeWidth(5);
 		
 		namePaint=new Paint();
+		namePaint.setAntiAlias(true);
+		namePaint.setDither(true);
 		namePaint.setColor(Color.RED);
 		namePaint.setTextSize(100);
 		namePaint.setTypeface(Typeface.DEFAULT);
 		
 		centerPoint=new PointF(0,0);
-		distance= 0.0;
+		distance=0.0;
 		genderNo=0;
 		ageNo=0;
-
 	}
 
 	
@@ -70,7 +71,8 @@ public class RectOnCamera extends View{
 								  (int)(centerPoint.x+distance),
 								  (int)(centerPoint.y+distance)), rectPaint);
 		
-		canvas.drawText(genders[genderNo]+" "+ages[ageNo], (int)(centerPoint.x-distance), (int)(centerPoint.y-distance), namePaint);	
+		canvas.drawText(genders[genderNo]+" "+ages[ageNo], (int)(centerPoint.x-distance), 
+				(int)(centerPoint.y-distance), namePaint);	
 	}
 	
 }
